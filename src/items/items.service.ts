@@ -1,0 +1,86 @@
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
+import { Repository } from 'typeorm';
+import { ITEMS_REPOSITORY, ItemsRepository } from './items.repository';
+import { InventoryItem } from './entities/inventory-item.entity';
+import { ItemPhoto } from './entities/item-photo.entity';
+import { CreateItemDto } from './dto/create-item.dto';
+import { UpdateItemDto } from './dto/update-item.dto';
+
+@Injectable()
+export class ItemsService {
+  constructor(
+    @Inject(ITEMS_REPOSITORY) private readonly itemsRepository: ItemsRepository,
+    @InjectRepository(ItemPhoto) private readonly photosRepo: Repository<ItemPhoto>,
+  ) {}
+
+  findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
+    return this.itemsRepository.findAll(query, limit, offset);
+  }
+
+  async findById(id: string): Promise<InventoryItem> {
+    const item = await this.itemsRepository.findById(id);
+    if (!item) throw new NotFoundException('Item not found');
+    return item;
+  }
+
+  async findBySku(sku: string): Promise<InventoryItem> {
+    const item = await this.itemsRepository.findBySku(sku);
+    if (!item) throw new NotFoundException('Item not found');
+    return item;
+  }
+
+  /**
+   * Creates or, if `dto.id` already exists, updates the item. Idempotent by
+   * design: the mobile offline queue replays this same call on reconnect
+   * using the UUID it generated when the item was first saved, so a retry
+   * never creates a duplicate.
+   */
+  async upsert(dto: CreateItemDto, userId: string): Promise<InventoryItem> {
+    const id = dto.id ?? randomUUID();
+    const existing = await this.itemsRepository.findById(id);
+
+    if (!existing) {
+      const bySku = await this.itemsRepository.findBySku(dto.sku);
+      if (bySku) throw new ConflictException(`SKU "${dto.sku}" already exists`);
+    }
+
+    const item = existing ?? new InventoryItem();
+    item.id = id;
+    item.sku = dto.sku;
+    if (dto.name !== undefined) item.name = dto.name;
+    if (dto.qty !== undefined) item.qty = dto.qty;
+    if (dto.location !== undefined) item.location = dto.location;
+    if (dto.category !== undefined) item.category = dto.category;
+    if (dto.latitude !== undefined) item.latitude = dto.latitude;
+    if (dto.longitude !== undefined) item.longitude = dto.longitude;
+    if (!existing) item.createdByUserId = userId;
+
+    return this.itemsRepository.save(item);
+  }
+
+  async update(id: string, dto: UpdateItemDto): Promise<InventoryItem> {
+    const item = await this.findById(id);
+    Object.assign(item, dto);
+    return this.itemsRepository.save(item);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.findById(id);
+    await this.itemsRepository.softDelete(id);
+  }
+
+  async addPhotos(id: string, files: Express.Multer.File[]) {
+    const item = await this.findById(id);
+    const photos = files.map((file) =>
+      this.photosRepo.create({
+        itemId: item.id,
+        filename: file.filename,
+        url: `/uploads/${file.filename}`,
+      }),
+    );
+    const addedPhotos = await this.photosRepo.save(photos);
+    return { item: await this.findById(id), addedPhotos };
+  }
+}
