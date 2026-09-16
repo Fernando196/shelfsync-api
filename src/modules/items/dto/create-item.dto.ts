@@ -25,8 +25,8 @@ export class CreateItemDto {
   location?: string;
 
   @IsOptional()
-  @IsString()
-  category?: string;
+  @IsUUID()
+  categoryId?: string;
 
   @IsOptional()
   @IsLatitude()

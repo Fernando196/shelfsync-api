@@ -4,15 +4,16 @@ import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { ITEMS_REPOSITORY, ItemsRepository } from './items.repository';
 import { InventoryItem } from './entities/inventory-item.entity';
-import { ItemPhoto } from './entities/item-photo.entity';
+import { ItemFile } from './entities/item-file.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ItemsService {
   constructor(
     @Inject(ITEMS_REPOSITORY) private readonly itemsRepository: ItemsRepository,
-    @InjectRepository(ItemPhoto) private readonly photosRepo: Repository<ItemPhoto>,
+    @InjectRepository(ItemFile) private readonly photosRepo: Repository<ItemFile>,
   ) {}
 
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
@@ -52,17 +53,18 @@ export class ItemsService {
     if (dto.name !== undefined) item.name = dto.name;
     if (dto.qty !== undefined) item.qty = dto.qty;
     if (dto.location !== undefined) item.location = dto.location;
-    if (dto.category !== undefined) item.category = dto.category;
+    if (dto.categoryId !== undefined) item.categoryId = dto.categoryId;
     if (dto.latitude !== undefined) item.latitude = dto.latitude;
     if (dto.longitude !== undefined) item.longitude = dto.longitude;
-    if (!existing) item.createdByUserId = userId;
+    if (!existing) item.createdBy = { id: userId } as User;
 
     return this.itemsRepository.save(item);
   }
 
-  async update(id: string, dto: UpdateItemDto): Promise<InventoryItem> {
+  async update(id: string, dto: UpdateItemDto, userId: string): Promise<InventoryItem> {
     const item = await this.findById(id);
     Object.assign(item, dto);
+    item.updatedBy = { id: userId } as User;
     return this.itemsRepository.save(item);
   }
 
@@ -78,6 +80,8 @@ export class ItemsService {
         itemId: item.id,
         filename: file.filename,
         url: `/uploads/${file.filename}`,
+        kind: 'photo',
+        mimeType: file.mimetype
       }),
     );
     const addedPhotos = await this.photosRepo.save(photos);

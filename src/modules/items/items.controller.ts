@@ -46,8 +46,8 @@ export class ItemsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateItemDto) {
-    return this.itemsService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateItemDto, @CurrentUser() user: User) {
+    return this.itemsService.update(id, dto,user.id);
   }
 
   @Delete(':id')
