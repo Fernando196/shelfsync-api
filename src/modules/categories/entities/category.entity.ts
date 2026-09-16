@@ -19,9 +19,9 @@ export class Category {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(()=> User,{ nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(()=> User,{ nullable: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name:'updated_by' })
-  updateBy: User
+  updatedBy: User
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;

@@ -1,6 +1,6 @@
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class CreateCategory {
+export class CreateCategoryDto {
 
   @IsString()
   @IsNotEmpty()
