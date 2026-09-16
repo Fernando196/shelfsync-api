@@ -13,6 +13,12 @@ export class ItemPhoto {
   @Column({ name: 'item_id' })
   itemId: string;
 
+  @Column({ name: 'kind', length:'150' })
+  kind: string;
+
+  @Column({ name: 'mime_type', length:100 })
+  mimeType: string;
+
   @Column()
   filename: string;
 

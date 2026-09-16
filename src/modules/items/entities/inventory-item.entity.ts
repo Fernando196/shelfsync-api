@@ -6,18 +6,22 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ItemPhoto } from './item-photo.entity';
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity('inventory_items')
 export class InventoryItem {
-  // Not auto-generated: the mobile app creates this UUID client-side so an
-  // item made while offline keeps a stable identity once it syncs later.
+
   @PrimaryColumn('uuid')
   id: string;
+  
+  @Column({ nullable: true, name:'category_id' })
+  categoryId: string;
 
   @Column({ unique: true })
   sku: string;
@@ -31,9 +35,6 @@ export class InventoryItem {
   @Column({ nullable: true })
   location: string;
 
-  @Column({ nullable: true })
-  category: string;
-
   @Column({ type: 'double precision', nullable: true })
   latitude: number | null;
 
@@ -41,21 +42,26 @@ export class InventoryItem {
   longitude: number | null;
 
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'created_by_user_id' })
+  @JoinColumn({ name: 'created_by' })
   createdBy: User;
-
-  @Column({ name: 'created_by_user_id', nullable: true })
-  createdByUserId: string | null;
-
-  @OneToMany(() => ItemPhoto, (photo) => photo.item)
-  photos: ItemPhoto[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'updated_by' })
+  updatedBy: User;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
+
+  @ManyToOne(() => Category, {nullable: true, onDelete: 'RESTRICT'})
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
+
+  @OneToMany(() => ItemPhoto, (photo) => photo.item)
+  photos: ItemPhoto[];
 }
