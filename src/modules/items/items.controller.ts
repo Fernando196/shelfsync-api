@@ -15,11 +15,11 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { randomUUID } from 'crypto';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { CurrentUser } from '../decorators/current-user.decorator';
 
 @Controller('items')
 export class ItemsController {

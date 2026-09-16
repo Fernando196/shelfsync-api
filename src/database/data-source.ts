@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
-import { User } from '../users/entities/user.entity';
-import { InventoryItem } from '../items/entities/inventory-item.entity';
-import { ItemPhoto } from '../items/entities/item-photo.entity';
+import { InventoryItem } from '../modules/items/entities/inventory-item.entity';
+import { ItemPhoto } from '../modules/items/entities/item-photo.entity';
+import { User } from '../modules/users/entities/user.entity';
 
 dotenv.config();
 

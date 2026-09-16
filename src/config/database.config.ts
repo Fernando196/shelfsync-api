@@ -1,7 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
-import { InventoryItem } from '../items/entities/inventory-item.entity';
-import { ItemPhoto } from '../items/entities/item-photo.entity';
+import { InventoryItem } from '../modules/items/entities/inventory-item.entity';
+import { ItemPhoto } from '../modules/items/entities/item-photo.entity';
 
 export function typeOrmConfig(): TypeOrmModuleOptions {
   return {
