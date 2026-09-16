@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import * as bcrypt from 'bcrypt';
 import { AppDataSource } from './data-source';
-import { User } from '../users/entities/user.entity';
+import { User } from '../modules/users/entities/user.entity';
 
 function randomPassword(): string {
   return Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
