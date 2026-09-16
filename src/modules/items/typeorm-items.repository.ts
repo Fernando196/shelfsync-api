@@ -11,7 +11,7 @@ export class TypeOrmItemsRepository implements ItemsRepository {
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
     const qb = this.repo
       .createQueryBuilder('item')
-      .leftJoinAndSelect('item.photos', 'photos')
+      .leftJoinAndSelect('item.files', 'files')
       .orderBy('item.createdAt', 'DESC');
 
     if (query) {
@@ -26,11 +26,11 @@ export class TypeOrmItemsRepository implements ItemsRepository {
   }
 
   findById(id: string): Promise<InventoryItem | null> {
-    return this.repo.findOne({ where: { id }, relations: { photos: true } });
+    return this.repo.findOne({ where: { id }, relations: { files: true } });
   }
 
   findBySku(sku: string): Promise<InventoryItem | null> {
-    return this.repo.findOne({ where: { sku }, relations: { photos: true } });
+    return this.repo.findOne({ where: { sku }, relations: { files: true } });
   }
 
   save(item: InventoryItem): Promise<InventoryItem> {

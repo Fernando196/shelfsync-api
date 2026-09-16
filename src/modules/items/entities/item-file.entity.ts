@@ -1,12 +1,12 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { InventoryItem } from './inventory-item.entity';
 
-@Entity('item_photos')
-export class ItemPhoto {
+@Entity('item_files')
+export class ItemFile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => InventoryItem, (item) => item.photos, { onDelete: 'CASCADE' })
+  @ManyToOne(() => InventoryItem, (item) => item.files, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'item_id' })
   item: InventoryItem;
 

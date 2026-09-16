@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { ItemPhoto } from './item-photo.entity';
+import { ItemFile } from './item-file.entity';
 import { Category } from '../../categories/entities/category.entity';
 
 @Entity('inventory_items')
@@ -62,6 +62,6 @@ export class InventoryItem {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @OneToMany(() => ItemPhoto, (photo) => photo.item)
-  photos: ItemPhoto[];
+  @OneToMany(() => ItemFile, (photo) => photo.item)
+  files: ItemFile[];
 }

@@ -1,7 +1,8 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { User } from '../users/entities/user.entity';
 import { InventoryItem } from '../modules/items/entities/inventory-item.entity';
-import { ItemPhoto } from '../modules/items/entities/item-photo.entity';
+import { User } from '../modules/users/entities/user.entity';
+import { ItemFile } from '../modules/items/entities/item-file.entity';
+import { Category } from '../modules/categories/entities/category.entity';
 
 export function typeOrmConfig(): TypeOrmModuleOptions {
   return {
@@ -11,10 +12,7 @@ export function typeOrmConfig(): TypeOrmModuleOptions {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [User, InventoryItem, ItemPhoto],
-    // Schema changes go through migrations (src/database/migrations), never
-    // through synchronize — this connects to a shared server, not a
-    // throwaway local db.
+    entities: [User, InventoryItem, ItemFile, Category],
     synchronize: false,
   };
 }

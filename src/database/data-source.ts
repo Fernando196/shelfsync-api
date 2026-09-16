@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
 import { InventoryItem } from '../modules/items/entities/inventory-item.entity';
-import { ItemPhoto } from '../modules/items/entities/item-photo.entity';
+import { ItemFile } from '../modules/items/entities/item-file.entity';
 import { User } from '../modules/users/entities/user.entity';
 import { Category } from '../modules/categories/entities/category.entity';
 
@@ -15,7 +15,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, InventoryItem, ItemPhoto, Category],
+  entities: [User, InventoryItem, ItemFile, Category],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,
 });
