@@ -75,6 +75,7 @@ export class ItemsService {
       this.photosRepo.create({
         itemId: item.id,
         filename: file.filename,
+        originalName: file.originalname,
         url: `/uploads/${file.filename}`,
         kind: 'photo',
         mimeType: file.mimetype,
