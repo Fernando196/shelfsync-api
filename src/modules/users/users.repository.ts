@@ -7,6 +7,7 @@ export const USERS_REPOSITORY = 'USERS_REPOSITORY';
 export interface UsersRepository {
   findAll(filters?: FiltersInput, page?: number, limit?: number): Promise<User[]>;
   findByEmail(email: string): Promise<User | null>;
+  findByEmailAuth(email: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
   create(data: Partial<User>): Promise<User>;
   update(data: Partial<User>): Promise<User>;

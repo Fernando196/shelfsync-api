@@ -12,12 +12,6 @@ export class UsersController {
 
   constructor(private readonly userService: UsersService){}
 
-  @Get('me')
-  me(@CurrentUser() user: User) {
-    const { passwordHash: _passwordHash, ...safeUser } = user;
-    return safeUser;
-  }
-
   @Get('')
   findAll(@Query('filters') filters: FiltersInput, @Query('page') page?: number, @Query('limit') limit?: number){
     return this.userService.findAll(filters,page, limit)

@@ -16,8 +16,14 @@ export class UsersService {
     return this.usersRepository.findAll(query, page, limit);
   }
 
+  async findByEmailAAuth(email: string): Promise<User | null> {
+    const user = await this.usersRepository.findByEmailAuth(email);
+    if(!user) throw new NotFoundException('The user does not exist');
+    return user;
+  }
+
   async findByEmail(email: string): Promise<User | null> {
-    const user = this.usersRepository.findByEmail(email);
+    const user = await this.usersRepository.findByEmail(email);
     if(!user) throw new NotFoundException('The user does not exist');
     return user;
   }

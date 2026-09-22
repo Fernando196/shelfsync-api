@@ -10,6 +10,13 @@ import { USERS_FILTEABLE_FILEDS } from './helpers/users_filtetable_fileds';
 export class TypeOrmUsersRepository implements UsersRepository {
   constructor(@InjectRepository(User) private readonly repo: Repository<User>) {}
 
+  findByEmailAuth(email: string): Promise<User | null> {
+    return this.repo.createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.email = :email',{email})
+      .getOne()
+  }
+
   findAll(filters: FiltersInput, page?: number, limit?: number): Promise<User[]> {
     const qb = this.repo
       .createQueryBuilder('user')
