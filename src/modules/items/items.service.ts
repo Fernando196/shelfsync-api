@@ -2,17 +2,17 @@ import { ConflictException, Inject, Injectable, NotFoundException } from '@nestj
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { ITEMS_REPOSITORY, ItemsRepository } from './items.repository';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { ItemFile } from './entities/item-file.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { User } from '../users/entities/user.entity';
+import { IItemsRepository, ITEMS_REPOSITORY } from './interfaces/items.repository';
 
 @Injectable()
 export class ItemsService {
   constructor(
-    @Inject(ITEMS_REPOSITORY) private readonly itemsRepository: ItemsRepository,
+    @Inject(ITEMS_REPOSITORY) private readonly itemsRepository: IItemsRepository,
     @InjectRepository(ItemFile) private readonly photosRepo: Repository<ItemFile>,
   ) {}
 
@@ -32,12 +32,6 @@ export class ItemsService {
     return item;
   }
 
-  /**
-   * Creates or, if `dto.id` already exists, updates the item. Idempotent by
-   * design: the mobile offline queue replays this same call on reconnect
-   * using the UUID it generated when the item was first saved, so a retry
-   * never creates a duplicate.
-   */
   async upsert(dto: CreateItemDto, userId: string): Promise<InventoryItem> {
     const id = dto.id ?? randomUUID();
     const existing = await this.itemsRepository.findById(id);
@@ -58,14 +52,16 @@ export class ItemsService {
     if (dto.longitude !== undefined) item.longitude = dto.longitude;
     if (!existing) item.createdBy = { id: userId } as User;
 
-    return this.itemsRepository.save(item);
+    await this.itemsRepository.save(item);
+    return this.findById(item.id);
   }
 
   async update(id: string, dto: UpdateItemDto, userId: string): Promise<InventoryItem> {
     const item = await this.findById(id);
     Object.assign(item, dto);
     item.updatedBy = { id: userId } as User;
-    return this.itemsRepository.save(item);
+    await this.itemsRepository.save(item);
+    return this.findById(item.id);
   }
 
   async remove(id: string): Promise<void> {
@@ -81,7 +77,7 @@ export class ItemsService {
         filename: file.filename,
         url: `/uploads/${file.filename}`,
         kind: 'photo',
-        mimeType: file.mimetype
+        mimeType: file.mimetype,
       }),
     );
     const addedPhotos = await this.photosRepo.save(photos);

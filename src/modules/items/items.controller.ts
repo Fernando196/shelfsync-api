@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UploadedFiles,
   UseInterceptors,
@@ -31,8 +32,16 @@ export class ItemsController {
   }
 
   @Get()
-  findAll(@Query('q') q?: string, @Query('limit') limit?: string, @Query('offset') offset?: string) {
-    return this.itemsService.findAll(q, limit ? Number(limit) : undefined, offset ? Number(offset) : undefined);
+  findAll(
+    @Query('q') q?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.itemsService.findAll(
+      q,
+      limit ? Number(limit) : undefined,
+      offset ? Number(offset) : undefined,
+    );
   }
 
   @Get('sku/:sku')
@@ -45,9 +54,14 @@ export class ItemsController {
     return this.itemsService.findById(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() dto: UpdateItemDto, @CurrentUser() user: User) {
-    return this.itemsService.update(id, dto,user.id);
+    return this.itemsService.update(id, dto, user.id);
+  }
+
+  @Patch(':id')
+  patch(@Param('id') id: string, @Body() dto: UpdateItemDto, @CurrentUser() user: User) {
+    return this.itemsService.update(id, dto, user.id);
   }
 
   @Delete(':id')
@@ -61,7 +75,8 @@ export class ItemsController {
     FilesInterceptor('photos', 10, {
       storage: diskStorage({
         destination: './uploads',
-        filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname) || '.jpg'}`),
+        filename: (_req, file, cb) =>
+          cb(null, `${randomUUID()}${extname(file.originalname) || '.jpg'}`),
       }),
       limits: { fileSize: 10 * 1024 * 1024 },
     }),

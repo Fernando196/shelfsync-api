@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { ItemFile } from './entities/item-file.entity';
-import { ITEMS_REPOSITORY } from './items.repository';
-import { TypeOrmItemsRepository } from './typeorm-items.repository';
 import { ItemsService } from './items.service';
 import { ItemsController } from './items.controller';
+import { ITEMS_REPOSITORY } from './interfaces/items.repository';
+import { ItemsRepository } from './items.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([InventoryItem, ItemFile])],
-  providers: [ItemsService, { provide: ITEMS_REPOSITORY, useClass: TypeOrmItemsRepository }],
+  providers: [ItemsService, { provide: ITEMS_REPOSITORY, useClass: ItemsRepository }],
   controllers: [ItemsController],
 })
 export class ItemsModule {}
