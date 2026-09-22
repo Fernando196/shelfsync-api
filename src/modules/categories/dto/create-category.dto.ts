@@ -1,6 +1,19 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateCategoryDto {
+  @IsOptional()
+  @IsString()
+  @IsUUID()
+  id?: string;
 
   @IsString()
   @IsNotEmpty()
