@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { JwtAuthGuard } from './modules/common/guards/jwt-auth.guard';
 import { CategoryModule } from './modules/categories/categories.module';
+import { ProductLookupModule } from './modules/product-lookup/product-lookup.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { CategoryModule } from './modules/categories/categories.module';
     AuthModule,
     UsersModule,
     ItemsModule,
-    CategoryModule
+    CategoryModule,
+    ProductLookupModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
