@@ -1,4 +1,14 @@
-import { IsInt, IsLatitude, IsLongitude, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsInt,
+  IsLatitude,
+  IsLongitude,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
+import { ItemStatus } from '../interfaces/ItemStatus.enum';
 
 export class CreateItemDto {
   // Optional: present when the mobile app already generated a UUID for this
@@ -35,4 +45,7 @@ export class CreateItemDto {
   @IsOptional()
   @IsLongitude()
   longitude?: number;
+
+  @IsOptional()
+  status?: ItemStatus;
 }

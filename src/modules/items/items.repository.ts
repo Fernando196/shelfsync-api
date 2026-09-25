@@ -3,10 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { IItemsRepository } from './interfaces/items.repository';
+import { ItemStatusHistory } from './entities/item-status-history';
 
 @Injectable()
 export class ItemsRepository implements IItemsRepository {
-  constructor(@InjectRepository(InventoryItem) private readonly repo: Repository<InventoryItem>) {}
+  constructor(
+    @InjectRepository(InventoryItem) private readonly repo: Repository<InventoryItem>,
+    @InjectRepository(ItemStatusHistory) private readonly repoStatus: Repository<ItemStatusHistory>,
+  ) {}
 
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
     const qb = this.repo

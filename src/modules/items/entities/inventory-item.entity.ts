@@ -13,14 +13,16 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { ItemFile } from './item-file.entity';
 import { Category } from '../../categories/entities/category.entity';
+import { ProductLookup } from '../../product-lookup/entities/product-lookup.entity';
+import { ItemStatus } from '../interfaces/ItemStatus.enum';
+import { ItemStatusHistory } from './item-status-history';
 
 @Entity('inventory_items')
 export class InventoryItem {
-
   @PrimaryColumn('uuid')
   id: string;
-  
-  @Column({ nullable: true, name:'category_id' })
+
+  @Column({ nullable: true, name: 'category_id' })
   categoryId: string;
 
   @Column({ unique: true })
@@ -58,10 +60,23 @@ export class InventoryItem {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
 
-  @ManyToOne(() => Category, {nullable: true, onDelete: 'RESTRICT'})
+  @ManyToOne(() => Category, { nullable: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
   @OneToMany(() => ItemFile, (photo) => photo.item)
   files: ItemFile[];
+
+  @Column({ nullable: true, name: 'product_lookup_id' })
+  productLookupId: string;
+
+  @ManyToOne(() => ProductLookup, { nullable: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'product_lookup_id' })
+  productLookup: ProductLookup;
+
+  @Column({ name: 'status', type: 'enum', enum: ItemStatus, default: ItemStatus.RECEIVED })
+  status: ItemStatus;
+
+  @OneToMany(() => ItemStatusHistory, (h) => h.item)
+  statusHistory: ItemStatusHistory[];
 }

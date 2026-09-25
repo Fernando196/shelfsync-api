@@ -8,12 +8,15 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { User } from '../users/entities/user.entity';
 import { IItemsRepository, ITEMS_REPOSITORY } from './interfaces/items.repository';
+import { ItemStatus } from './interfaces/ItemStatus.enum';
+import { ItemStatusHistory } from './entities/item-status-history';
 
 @Injectable()
 export class ItemsService {
   constructor(
     @Inject(ITEMS_REPOSITORY) private readonly itemsRepository: IItemsRepository,
     @InjectRepository(ItemFile) private readonly photosRepo: Repository<ItemFile>,
+    @InjectRepository(ItemStatusHistory) private readonly statusRepo: Repository<ItemStatusHistory>,
   ) {}
 
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
@@ -53,6 +56,7 @@ export class ItemsService {
     if (!existing) item.createdBy = { id: userId } as User;
 
     await this.itemsRepository.save(item);
+    this.updateStatus(item.id, dto?.status ?? ItemStatus.RECEIVED, userId);
     return this.findById(item.id);
   }
 
@@ -83,5 +87,21 @@ export class ItemsService {
     );
     const addedPhotos = await this.photosRepo.save(photos);
     return { item: await this.findById(id), addedPhotos };
+  }
+
+  async updateStatus(id: string, changeDate: Date, newStatus: ItemStatus, userId: string) {
+    const item = await this.itemsRepository.findById(id);
+    if (!item) throw new NotFoundException('Item not found');
+
+    const history = new ItemStatusHistory();
+    history.itemId = id;
+    history.fromStatus = item.status;
+    history.toStatus = newStatus;
+    history.changedAt = changeDate;
+    history.changedBy = { id: userId } as User;
+    await this.statusRepo.save(history);
+
+    item.status = newStatus;
+    return this.itemsRepository.save(item);
   }
 }
