@@ -7,10 +7,7 @@ import { ItemStatusHistory } from './entities/item-status-history';
 
 @Injectable()
 export class ItemsRepository implements IItemsRepository {
-  constructor(
-    @InjectRepository(InventoryItem) private readonly repo: Repository<InventoryItem>,
-    @InjectRepository(ItemStatusHistory) private readonly repoStatus: Repository<ItemStatusHistory>,
-  ) {}
+  constructor(@InjectRepository(InventoryItem) private readonly repo: Repository<InventoryItem>) {}
 
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
     const qb = this.repo

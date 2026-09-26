@@ -56,7 +56,6 @@ export class ItemsService {
     if (!existing) item.createdBy = { id: userId } as User;
 
     await this.itemsRepository.save(item);
-    this.updateStatus(item.id, dto?.status ?? ItemStatus.RECEIVED, userId);
     return this.findById(item.id);
   }
 
@@ -89,7 +88,7 @@ export class ItemsService {
     return { item: await this.findById(id), addedPhotos };
   }
 
-  async updateStatus(id: string, changeDate: Date, newStatus: ItemStatus, userId: string) {
+  async updateStatus(id: string, newStatus: ItemStatus, userId: string, changeDate: Date) {
     const item = await this.itemsRepository.findById(id);
     if (!item) throw new NotFoundException('Item not found');
 
