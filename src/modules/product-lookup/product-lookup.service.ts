@@ -53,8 +53,7 @@ export class ProductLookupService {
     }
 
     // Save only the columns, not the loaded relation, so a new itemId is persisted
-    const { item, ...data } = productLookup;
-    if (dto.itemId !== undefined) data.itemId = dto.itemId;
+    const data = productLookup;
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.barcode !== undefined) data.barcode = dto.barcode;
     if (dto.sku !== undefined) data.sku = dto.sku;
@@ -76,7 +75,6 @@ export class ProductLookupService {
 
     const productLookup: Partial<ProductLookup> = {
       id: data?.id ? data.id : randomUUID(),
-      itemId: data.itemId,
       description: data.description,
       barcode: data.barcode,
       sku: data.sku,

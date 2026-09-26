@@ -39,15 +39,9 @@ export class ProductLookupRepository implements IProductLookupRepository {
       where: { id },
       select: {
         id: true,
-        itemId: true,
         description: true,
         barcode: true,
         sku: true,
-        item: {
-          id: true,
-          sku: true,
-          name: true,
-        },
         createdAt: true,
         createdBy: {
           id: true,
@@ -60,7 +54,6 @@ export class ProductLookupRepository implements IProductLookupRepository {
         },
       },
       relations: {
-        item: true,
         createdBy: true,
         updatedBy: true,
       },
