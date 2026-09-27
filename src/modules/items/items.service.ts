@@ -84,8 +84,8 @@ export class ItemsService {
         mimeType: file.mimetype,
       }),
     );
-    const addedPhotos = await this.photosRepo.save(photos);
-    return { item: await this.findById(id), addedPhotos };
+    await this.photosRepo.save(photos);
+    return this.findById(id);
   }
 
   async updateStatus(id: string, newStatus: ItemStatus, userId: string, changeDate: Date) {
