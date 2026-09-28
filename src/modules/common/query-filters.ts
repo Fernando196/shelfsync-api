@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from "typeorm";
+import { SelectQueryBuilder } from 'typeorm';
 
 export type FilterOperator = 'eq' | 'like' | 'gte' | 'lte' | 'in';
 export type FilterableFieldsConfig = Record<string, FilterOperator[]>;
@@ -19,10 +19,11 @@ export function applyFilters<T extends object>(
 
       const param = `${alias}_${field}_${operator}`;
       if (operator === 'eq') qb.andWhere(`${alias}.${field} = :${param}`, { [param]: value });
-      if (operator === 'like') qb.andWhere(`${alias}.${field} ILIKE :${param}`, { [param]: `%${value}%` });
+      if (operator === 'like')
+        qb.andWhere(`${alias}.${field} ILIKE :${param}`, { [param]: `%${value}%` });
       if (operator === 'gte') qb.andWhere(`${alias}.${field} >= :${param}`, { [param]: value });
       if (operator === 'lte') qb.andWhere(`${alias}.${field} <= :${param}`, { [param]: value });
-      if (operator === 'in') qb.andWhere(`${alias}.${field} in :${param}`, { [param] : value });
+      if (operator === 'in') qb.andWhere(`${alias}.${field} in :${param}`, { [param]: value });
     }
   }
 }
