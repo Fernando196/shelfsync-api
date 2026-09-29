@@ -26,6 +26,10 @@ export class ProductLookupRepository implements IProductLookupRepository {
     return qb.getMany();
   }
 
+  findByCode(code: string): Promise<ProductLookup | null> {
+    return this.repo.findOne({ where: [{ barcode: code }, { sku: code }] });
+  }
+
   findByBarcode(barcode: string): Promise<ProductLookup | null> {
     return this.repo.findOne({ where: { barcode } });
   }

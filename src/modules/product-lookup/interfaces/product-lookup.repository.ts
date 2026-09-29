@@ -9,6 +9,7 @@ export interface IProductLookupRepository {
   findById(id: string): Promise<ProductLookup | null>;
   findByBarcode(barcode: string): Promise<ProductLookup | null>;
   findBySku(sku: string): Promise<ProductLookup | null>;
+  findByCode(code: string): Promise<ProductLookup | null>;
   create(data: Partial<ProductLookup>): Promise<ProductLookup>;
   update(data: Partial<ProductLookup>): Promise<ProductLookup>;
   delete(id: string): Promise<DeleteResult>;

@@ -28,6 +28,9 @@ export class ProductLookupService {
   findBySku(sku: string): Promise<ProductLookup | null> {
     return this.productLookupRepository.findBySku(sku);
   }
+  findByCode(code: string): Promise<ProductLookup | null> {
+    return this.productLookupRepository.findByCode(code);
+  }
 
   async findById(id: string): Promise<ProductLookup> {
     const productLookup = await this.productLookupRepository.findById(id);

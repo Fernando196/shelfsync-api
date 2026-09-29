@@ -45,6 +45,13 @@ export class ProductLookupController {
     return productLookup;
   }
 
+  @Get('code/:code')
+  async findByCode(@Param('code') code: string) {
+    const productLookup = await this.productLookupService.findByCode(code);
+    if (!productLookup) throw new NotFoundException('The product lookup does not exist');
+    return productLookup;
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productLookupService.findById(id);
