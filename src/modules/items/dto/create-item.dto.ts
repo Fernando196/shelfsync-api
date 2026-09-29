@@ -7,8 +7,11 @@ import {
   IsString,
   IsUUID,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { ItemStatus } from '../interfaces/ItemStatus.enum';
+import { CreateProductLookupDto } from '../../product-lookup/dto/create-product-lookup.dto';
+import { Type } from 'class-transformer';
 
 export class CreateItemDto {
   // Optional: present when the mobile app already generated a UUID for this
@@ -16,10 +19,6 @@ export class CreateItemDto {
   @IsOptional()
   @IsUUID()
   id?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  sku: string;
 
   @IsOptional()
   @IsString()
@@ -48,4 +47,13 @@ export class CreateItemDto {
 
   @IsOptional()
   status?: ItemStatus;
+
+  @IsOptional()
+  @IsUUID()
+  productLookupId?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateProductLookupDto)
+  productLookup?: CreateProductLookupDto;
 }

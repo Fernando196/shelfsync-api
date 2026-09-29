@@ -7,9 +7,13 @@ import { ItemsController } from './items.controller';
 import { ITEMS_REPOSITORY } from './interfaces/items.repository';
 import { ItemsRepository } from './items.repository';
 import { ItemStatusHistory } from './entities/item-status-history';
+import { ProductLookupModule } from '../product-lookup/product-lookup.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([InventoryItem, ItemFile, ItemStatusHistory])],
+  imports: [
+    TypeOrmModule.forFeature([InventoryItem, ItemFile, ItemStatusHistory]),
+    ProductLookupModule,
+  ],
   providers: [ItemsService, { provide: ITEMS_REPOSITORY, useClass: ItemsRepository }],
   controllers: [ItemsController],
 })

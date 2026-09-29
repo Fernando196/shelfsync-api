@@ -13,5 +13,6 @@ import { ProductLookupRepository } from './product-lookup.repository';
     { provide: PRODUCT_LOOKUP_REPOSITORY, useClass: ProductLookupRepository },
   ],
   controllers: [ProductLookupController],
+  exports: [PRODUCT_LOOKUP_REPOSITORY],
 })
 export class ProductLookupModule {}

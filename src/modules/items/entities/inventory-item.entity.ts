@@ -25,9 +25,6 @@ export class InventoryItem {
   @Column({ nullable: true, name: 'category_id' })
   categoryId: string;
 
-  @Column({ unique: true })
-  sku: string;
-
   @Column({ nullable: true })
   name: string;
 
@@ -67,10 +64,10 @@ export class InventoryItem {
   @OneToMany(() => ItemFile, (photo) => photo.item)
   files: ItemFile[];
 
-  @Column({ nullable: true, name: 'product_lookup_id' })
+  @Column({ nullable: false, name: 'product_lookup_id' })
   productLookupId: string;
 
-  @ManyToOne(() => ProductLookup, { nullable: true, onDelete: 'RESTRICT' })
+  @ManyToOne(() => ProductLookup, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'product_lookup_id' })
   productLookup: ProductLookup;
 

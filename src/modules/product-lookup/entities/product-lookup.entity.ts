@@ -1,4 +1,5 @@
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -8,21 +9,21 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { InventoryItem } from '../../items/entities/inventory-item.entity';
 
+@Check('CHK_product_lookup_code', '"barcode" IS NOT NULL OR "sku" IS NOT NULL')
 @Entity('product_lookup')
 export class ProductLookup {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 150, nullable: true })
-  barcode: string;
+  @Column({ type: 'varchar', length: 150, nullable: true, unique: true })
+  barcode: string | null;
 
-  @Column({ length: 150, nullable: true })
-  sku: string;
+  @Column({ type: 'varchar', length: 150, nullable: true, unique: true })
+  sku: string | null;
 
-  @Column({ length: 1000, nullable: true })
-  description: string;
+  @Column({ type: 'varchar', length: 1000, nullable: true })
+  description: string | null;
 
   @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'created_by' })

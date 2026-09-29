@@ -44,11 +44,6 @@ export class ItemsController {
     );
   }
 
-  @Get('sku/:sku')
-  findBySku(@Param('sku') sku: string) {
-    return this.itemsService.findBySku(sku);
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.itemsService.findById(id);

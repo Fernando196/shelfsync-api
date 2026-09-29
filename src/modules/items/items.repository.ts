@@ -16,7 +16,7 @@ export class ItemsRepository implements IItemsRepository {
       .orderBy('item.createdAt', 'DESC');
 
     if (query) {
-      qb.andWhere('(item.sku ILIKE :q OR item.name ILIKE :q OR item.location ILIKE :q)', {
+      qb.andWhere('(item.name ILIKE :q OR item.location ILIKE :q)', {
         q: `%${query}%`,
       });
     }
@@ -32,7 +32,6 @@ export class ItemsRepository implements IItemsRepository {
       select: {
         id: true,
         categoryId: true,
-        sku: true,
         name: true,
         qty: true,
         location: true,
@@ -57,11 +56,7 @@ export class ItemsRepository implements IItemsRepository {
     });
   }
 
-  findBySku(sku: string): Promise<InventoryItem | null> {
-    return this.repo.findOne({ where: { sku }, relations: { files: true } });
-  }
-
-  save(item: InventoryItem): Promise<InventoryItem> {
+  save(item: Partial<InventoryItem>): Promise<InventoryItem> {
     return this.repo.save(item);
   }
 

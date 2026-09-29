@@ -1,4 +1,10 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
@@ -11,6 +17,12 @@ import { IItemsRepository, ITEMS_REPOSITORY } from './interfaces/items.repositor
 import { ItemStatus } from './interfaces/ItemStatus.enum';
 import { ItemStatusHistory } from './entities/item-status-history';
 import { Category } from '../categories/entities/category.entity';
+import {
+  IProductLookupRepository,
+  PRODUCT_LOOKUP_REPOSITORY,
+} from '../product-lookup/interfaces/product-lookup.repository';
+import { DataSource } from 'typeorm';
+import { ProductLookup } from '../product-lookup/entities/product-lookup.entity';
 
 @Injectable()
 export class ItemsService {
@@ -18,6 +30,9 @@ export class ItemsService {
     @Inject(ITEMS_REPOSITORY) private readonly itemsRepository: IItemsRepository,
     @InjectRepository(ItemFile) private readonly photosRepo: Repository<ItemFile>,
     @InjectRepository(ItemStatusHistory) private readonly statusRepo: Repository<ItemStatusHistory>,
+    @Inject(PRODUCT_LOOKUP_REPOSITORY)
+    private readonly productLookupRepo: IProductLookupRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
@@ -30,34 +45,66 @@ export class ItemsService {
     return item;
   }
 
-  async findBySku(sku: string): Promise<InventoryItem> {
-    const item = await this.itemsRepository.findBySku(sku);
-    if (!item) throw new NotFoundException('Item not found');
-    return item;
-  }
-
   async upsert(dto: CreateItemDto, userId: string): Promise<InventoryItem> {
     const id = dto.id ?? randomUUID();
     const existing = await this.itemsRepository.findById(id);
 
+    let productLookup: null | ProductLookup = null;
     if (!existing) {
-      const bySku = await this.itemsRepository.findBySku(dto.sku);
-      if (bySku) throw new ConflictException(`SKU "${dto.sku}" already exists`);
+      if (dto.productLookupId && dto.productLookup)
+        throw new BadRequestException('No deben venir dos ProductLookUp');
+      if (!dto.productLookupId && !dto.productLookup?.sku && !dto.productLookup?.barcode)
+        throw new BadRequestException('No se encontro sku o productLookupId');
+      if (dto?.productLookupId) {
+        productLookup = await this.productLookupRepo.findById(dto.productLookupId);
+        if (!productLookup) throw new NotFoundException('No existe el producto');
+      } else if (dto?.productLookup) {
+        if (dto.productLookup.barcode) {
+          const barcodeSearch = await this.productLookupRepo.findByBarcode(
+            dto.productLookup?.barcode,
+          );
+          if (barcodeSearch)
+            throw new ConflictException('Ya existe un producto con el mismo barcode.');
+        }
+        if (dto.productLookup.sku) {
+          const skuSearch = await this.productLookupRepo.findBySku(dto.productLookup.sku);
+          if (skuSearch) throw new ConflictException('Ya existe un producto con el mismo sku.');
+        }
+      }
     }
 
-    const item = existing ?? new InventoryItem();
-    item.id = id;
-    item.sku = dto.sku;
-    if (dto.name !== undefined) item.name = dto.name;
-    if (dto.qty !== undefined) item.qty = dto.qty;
-    if (dto.location !== undefined) item.location = dto.location;
-    if (dto.categoryId !== undefined) item.categoryId = dto.categoryId;
-    if (dto.latitude !== undefined) item.latitude = dto.latitude;
-    if (dto.longitude !== undefined) item.longitude = dto.longitude;
-    if (!existing) item.createdBy = { id: userId } as User;
+    const itemId = await this.dataSource.transaction(async (manager) => {
+      if (!existing && !productLookup?.id && dto.productLookup) {
+        productLookup = await manager.save(ProductLookup, {
+          barcode: dto.productLookup?.barcode ?? null,
+          id: randomUUID(),
+          sku: dto.productLookup.sku || null,
+          createdBy: { id: userId } as User,
+          description: dto.productLookup.description || null,
+        });
+      }
 
-    await this.itemsRepository.save(item);
-    return this.findById(item.id);
+      const item = existing ?? new InventoryItem();
+
+      if (!existing) {
+        if (!productLookup?.id) throw new BadRequestException('El id del producto debe existir');
+        item.productLookupId = productLookup.id;
+      }
+
+      item.id = id;
+      if (dto.name !== undefined) item.name = dto.name;
+      if (dto.qty !== undefined) item.qty = dto.qty;
+      if (dto.location !== undefined) item.location = dto.location;
+      if (dto.categoryId !== undefined) item.categoryId = dto.categoryId;
+      if (dto.latitude !== undefined) item.latitude = dto.latitude;
+      if (dto.longitude !== undefined) item.longitude = dto.longitude;
+      if (!existing) item.createdBy = { id: userId } as User;
+
+      await manager.save(InventoryItem, item);
+      return item.id;
+    });
+
+    return this.findById(itemId);
   }
 
   async update(id: string, dto: UpdateItemDto, userId: string): Promise<InventoryItem> {
