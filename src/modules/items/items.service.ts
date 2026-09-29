@@ -10,6 +10,7 @@ import { User } from '../users/entities/user.entity';
 import { IItemsRepository, ITEMS_REPOSITORY } from './interfaces/items.repository';
 import { ItemStatus } from './interfaces/ItemStatus.enum';
 import { ItemStatusHistory } from './entities/item-status-history';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class ItemsService {
@@ -62,6 +63,10 @@ export class ItemsService {
   async update(id: string, dto: UpdateItemDto, userId: string): Promise<InventoryItem> {
     const item = await this.findById(id);
     Object.assign(item, dto);
+
+    if (dto.categoryId !== undefined) {
+      item.category = { id: dto.categoryId } as Category;
+    }
     item.updatedBy = { id: userId } as User;
     await this.itemsRepository.save(item);
     return this.findById(item.id);
