@@ -13,12 +13,16 @@ export class ItemsRepository implements IItemsRepository {
     const qb = this.repo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.files', 'files')
+      .leftJoinAndSelect('item.productLookup', 'productLookup')
       .orderBy('item.createdAt', 'DESC');
 
     if (query) {
-      qb.andWhere('(item.name ILIKE :q OR item.location ILIKE :q)', {
-        q: `%${query}%`,
-      });
+      qb.andWhere(
+        '(item.name ILIKE :q OR item.location ILIKE :q OR productLookup.sku ILIKE :q OR productLookup.barcode ILIKE :q OR CAST(item.code AS TEXT) ILIKE :q)',
+        {
+          q: `%${query}%`,
+        },
+      );
     }
     if (limit) qb.take(limit);
     if (offset) qb.skip(offset);
@@ -31,6 +35,7 @@ export class ItemsRepository implements IItemsRepository {
       where: { id },
       select: {
         id: true,
+        code: true,
         categoryId: true,
         name: true,
         qty: true,
@@ -51,8 +56,20 @@ export class ItemsRepository implements IItemsRepository {
           id: true,
           name: true,
         },
+        productLookup: {
+          id: true,
+          barcode: true,
+          sku: true,
+          description: true,
+        },
       },
-      relations: { files: true, createdBy: true, updatedBy: true, category: true },
+      relations: {
+        files: true,
+        createdBy: true,
+        updatedBy: true,
+        category: true,
+        productLookup: true,
+      },
     });
   }
 
