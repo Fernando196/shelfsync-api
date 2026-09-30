@@ -22,6 +22,9 @@ export class InventoryItem {
   @PrimaryColumn('uuid')
   id: string;
 
+  @Column({ type: 'int', generated: 'identity', generatedIdentity: 'ALWAYS', unique: true })
+  code: number;
+
   @Column({ nullable: true, name: 'category_id' })
   categoryId: string;
 
