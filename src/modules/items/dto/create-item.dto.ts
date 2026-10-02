@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -46,9 +47,6 @@ export class CreateItemDto {
   longitude?: number;
 
   @IsOptional()
-  status?: ItemStatus;
-
-  @IsOptional()
   @IsUUID()
   productLookupId?: string;
 
@@ -56,4 +54,9 @@ export class CreateItemDto {
   @ValidateNested()
   @Type(() => CreateProductLookupDto)
   productLookup?: CreateProductLookupDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1500)
+  notes?: string;
 }

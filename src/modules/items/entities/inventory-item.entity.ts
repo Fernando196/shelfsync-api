@@ -79,4 +79,7 @@ export class InventoryItem {
 
   @OneToMany(() => ItemStatusHistory, (h) => h.item)
   statusHistory: ItemStatusHistory[];
+
+  @Column({ nullable: true, length: 1500 })
+  notes: string;
 }
