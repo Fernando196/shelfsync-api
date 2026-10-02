@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { ItemFile } from './entities/item-file.entity';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -23,6 +23,7 @@ import {
 } from '../product-lookup/interfaces/product-lookup.repository';
 import { DataSource } from 'typeorm';
 import { ProductLookup } from '../product-lookup/entities/product-lookup.entity';
+import { ALLOWED_FROM } from './const/allowed_from.const';
 
 @Injectable()
 export class ItemsService {
@@ -81,6 +82,7 @@ export class ItemsService {
           sku: dto.productLookup.sku || null,
           createdBy: { id: userId } as User,
           description: dto.productLookup.description || null,
+          needAssembly: dto.productLookup.needAssembly ?? false,
         });
       }
 
@@ -98,9 +100,25 @@ export class ItemsService {
       if (dto.categoryId !== undefined) item.categoryId = dto.categoryId;
       if (dto.latitude !== undefined) item.latitude = dto.latitude;
       if (dto.longitude !== undefined) item.longitude = dto.longitude;
-      if (!existing) item.createdBy = { id: userId } as User;
+      if (dto.notes !== undefined) item.notes = dto.notes;
+      if (!existing) {
+        item.createdBy = { id: userId } as User;
+      }
 
       await manager.save(InventoryItem, item);
+
+      if (!existing) {
+        await manager.save(ItemStatusHistory, {
+          itemId: item.id,
+          fromStatus: null,
+          toStatus: ItemStatus.RECEIVED,
+          changedBy: { id: userId } as User,
+        });
+        if (productLookup?.needAssembly) {
+          await this.updateStatus(item.id, ItemStatus.PENDING_ASSEMBLY, userId, undefined, manager);
+        }
+      }
+
       return item.id;
     });
 
@@ -140,19 +158,34 @@ export class ItemsService {
     return this.findById(id);
   }
 
-  async updateStatus(id: string, newStatus: ItemStatus, userId: string, changeDate: Date) {
-    const item = await this.itemsRepository.findById(id);
+  async updateStatus(
+    id: string,
+    newStatus: ItemStatus,
+    userId: string,
+    comment?: string,
+    manager?: EntityManager,
+  ) {
+    const em = manager ?? this.dataSource.manager;
+
+    const item = await em.findOne(InventoryItem, { where: { id } });
     if (!item) throw new NotFoundException('Item not found');
 
-    const history = new ItemStatusHistory();
-    history.itemId = id;
-    history.fromStatus = item.status;
-    history.toStatus = newStatus;
-    history.changedAt = changeDate;
-    history.changedBy = { id: userId } as User;
-    await this.statusRepo.save(history);
+    if (!ALLOWED_FROM[newStatus].includes(item.status)) {
+      throw new ConflictException(`No se puede pasar de ${item.status} a ${newStatus}`);
+    }
+    if (newStatus === ItemStatus.DAMAGED && !comment?.trim()) {
+      throw new BadRequestException('Describe el daño');
+    }
 
+    const history = em.create(ItemStatusHistory, {
+      itemId: id,
+      fromStatus: item.status,
+      toStatus: newStatus,
+      changedBy: { id: userId } as User,
+      comment,
+    });
+    await em.save(ItemStatusHistory, history);
     item.status = newStatus;
-    return this.itemsRepository.save(item);
+    return em.save(InventoryItem, item);
   }
 }

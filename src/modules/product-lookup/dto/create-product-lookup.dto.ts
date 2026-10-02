@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateProductLookupDto {
   @IsOptional()
@@ -19,4 +19,8 @@ export class CreateProductLookupDto {
   @IsString()
   @MaxLength(150)
   sku?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  needAssembly?: boolean;
 }

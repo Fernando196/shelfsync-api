@@ -46,6 +46,7 @@ export class ProductLookupRepository implements IProductLookupRepository {
         description: true,
         barcode: true,
         sku: true,
+        needAssembly: true,
         createdAt: true,
         createdBy: {
           id: true,

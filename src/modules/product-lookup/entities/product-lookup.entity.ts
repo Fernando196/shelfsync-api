@@ -38,4 +38,7 @@ export class ProductLookup {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({ type: 'boolean', default: false, name: 'need_assembly' })
+  needAssembly: boolean;
 }
