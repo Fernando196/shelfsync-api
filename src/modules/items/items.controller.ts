@@ -21,6 +21,8 @@ import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { ItemStatus } from './interfaces/ItemStatus.enum';
+import { UpdateItemStatusDto } from './dto/update-item-status.dto';
 
 @Controller('items')
 export class ItemsController {
@@ -57,6 +59,15 @@ export class ItemsController {
   @Patch(':id')
   patch(@Param('id') id: string, @Body() dto: UpdateItemDto, @CurrentUser() user: User) {
     return this.itemsService.update(id, dto, user.id);
+  }
+
+  @Patch(':id/status')
+  patchStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateItemStatusDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.itemsService.updateStatus(id, dto.status, user.id, dto.comment);
   }
 
   @Delete(':id')
