@@ -5,4 +5,5 @@ export enum ItemStatus {
   READY = 'ready',
   SOLD = 'sold',
   DAMAGED = 'damaged',
+  PAUSED = 'paused',
 }

@@ -34,4 +34,7 @@ export class ItemStatusHistory {
 
   @CreateDateColumn({ name: 'changed_at' })
   changedAt: Date;
+
+  @Column({ type: 'varchar', length: 1500, nullable: true, name: 'comment' })
+  comment?: string;
 }
