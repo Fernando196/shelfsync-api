@@ -46,6 +46,7 @@ export class ItemsRepository implements IItemsRepository {
         updatedAt: true,
         deletedAt: true,
         files: true,
+        status: true,
         createdBy: {
           fullName: true,
         },
