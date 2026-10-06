@@ -209,6 +209,7 @@ export class ItemsService {
     });
     await em.save(ItemStatusHistory, history);
     item.status = newStatus;
-    return em.save(InventoryItem, item);
+    await em.save(InventoryItem, item);
+    return em.findOne(InventoryItem, { where: { id: item.id } });
   }
 }
