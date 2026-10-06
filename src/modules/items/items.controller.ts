@@ -51,6 +51,11 @@ export class ItemsController {
     return this.itemsService.findById(id);
   }
 
+  @Get(':id/history')
+  findHistory(@Param('id') id: string) {
+    return this.itemsService.getStatusHistory(id);
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() dto: UpdateItemDto, @CurrentUser() user: User) {
     return this.itemsService.update(id, dto, user.id);

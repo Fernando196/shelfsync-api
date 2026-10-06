@@ -46,6 +46,29 @@ export class ItemsService {
     return item;
   }
 
+  async getStatusHistory(id: string): Promise<{ data: ItemStatusHistory[]; count: number }> {
+    const item = await this.itemsRepository.findById(id);
+    if (!item) throw new NotFoundException('Item not found');
+    const [data, count] = await this.statusRepo.findAndCount({
+      where: { itemId: id },
+      select: {
+        id: true,
+        itemId: true,
+        fromStatus: true,
+        toStatus: true,
+        changedAt: true,
+        comment: true,
+        changedBy: {
+          id: true,
+          fullName: true,
+        },
+      },
+      relations: { changedBy: true },
+      order: { changedAt: 'DESC' },
+    });
+    return { data, count };
+  }
+
   async upsert(dto: CreateItemDto, userId: string): Promise<InventoryItem> {
     const id = dto.id ?? randomUUID();
     const existing = await this.itemsRepository.findById(id);
