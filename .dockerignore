@@ -1,0 +1,8 @@
+.dockerignore
+node_modules
+dist
+uploads
+.env
+.git
+.claude
+tsconfig.tsbuildinfo
