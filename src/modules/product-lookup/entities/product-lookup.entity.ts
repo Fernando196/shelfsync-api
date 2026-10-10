@@ -10,7 +10,10 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
-@Check('CHK_product_lookup_code', '"barcode" IS NOT NULL OR "sku" IS NOT NULL')
+@Check(
+  'CHK_product_lookup_identity',
+  '"barcode" IS NOT NULL OR "sku" IS NOT NULL OR "description" IS NOT NULL',
+)
 @Entity('product_lookup')
 export class ProductLookup {
   @PrimaryGeneratedColumn('uuid')

@@ -79,8 +79,13 @@ export class ItemsService {
     if (!existing) {
       if (dto.productLookupId && dto.productLookup)
         throw new BadRequestException('No deben venir dos ProductLookUp');
-      if (!dto.productLookupId && !dto.productLookup?.sku && !dto.productLookup?.barcode)
-        throw new BadRequestException('No se encontro sku o productLookupId');
+      if (
+        !dto.productLookupId &&
+        !dto.productLookup?.sku &&
+        !dto.productLookup?.barcode &&
+        !dto.productLookup?.description?.trim()
+      )
+        throw new BadRequestException('El producto necesita barcode, sku o descripción');
       if (dto?.productLookupId) {
         productLookup = await this.productLookupRepo.findById(dto.productLookupId);
         if (!productLookup) throw new NotFoundException('No existe el producto');
