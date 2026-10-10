@@ -82,4 +82,6 @@ export class InventoryItem {
 
   @Column({ nullable: true, length: 1500 })
   notes: string;
+
+  cover?: ItemFile | null;
 }

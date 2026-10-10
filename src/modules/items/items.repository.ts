@@ -12,7 +12,12 @@ export class ItemsRepository implements IItemsRepository {
   findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
     const qb = this.repo
       .createQueryBuilder('item')
-      .leftJoinAndSelect('item.files', 'files')
+      .leftJoinAndMapOne(
+        'item.cover',
+        'item.files',
+        'cover',
+        'cover.id = (select f.id from item_files f where f.item_id = item.id order by f.created_at asc, f.id asc limit 1)',
+      )
       .leftJoinAndSelect('item.productLookup', 'productLookup')
       .orderBy('item.createdAt', 'DESC');
 
