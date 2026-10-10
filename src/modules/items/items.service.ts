@@ -24,6 +24,8 @@ import {
 import { DataSource } from 'typeorm';
 import { ProductLookup } from '../product-lookup/entities/product-lookup.entity';
 import { ALLOWED_FROM } from './const/allowed_from.const';
+import { mkdir } from 'fs/promises';
+import sharp from 'sharp';
 
 @Injectable()
 export class ItemsService {
@@ -167,14 +169,31 @@ export class ItemsService {
 
   async addPhotos(id: string, files: Express.Multer.File[]) {
     const item = await this.findById(id);
-    const photos = files.map((file) =>
-      this.photosRepo.create({
-        itemId: item.id,
-        filename: file.filename,
-        originalName: file.originalname,
-        url: `/uploads/${file.filename}`,
-        kind: 'photo',
-        mimeType: file.mimetype,
+    await mkdir('./uploads/thumbs', {
+      recursive: true,
+    });
+    const photos = await Promise.all(
+      files.map(async (file) => {
+        let thumbnailUrl: string | null = null;
+        try {
+          await sharp(file.path)
+            .rotate()
+            .resize(240)
+            .jpeg({ quality: 70 })
+            .toFile(`./uploads/thumbs/${file.filename}`);
+          thumbnailUrl = `/uploads/thumbs/${file.filename}`;
+        } catch (err) {
+          console.log('Error al generar el thumnail para el archvo: ', file.filename, err);
+        }
+        return this.photosRepo.create({
+          itemId: item.id,
+          filename: file.filename,
+          originalName: file.originalname,
+          url: `/uploads/${file.filename}`,
+          kind: 'photo',
+          mimeType: file.mimetype,
+          thumbnailUrl,
+        });
       }),
     );
     await this.photosRepo.save(photos);

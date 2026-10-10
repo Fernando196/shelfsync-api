@@ -37,4 +37,7 @@ export class ItemFile {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @Column({ name: 'thumbnail_url', type: 'varchar', nullable: true })
+  thumbnailUrl: string | null;
 }
