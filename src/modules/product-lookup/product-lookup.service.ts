@@ -9,6 +9,7 @@ import {
   PRODUCT_LOOKUP_REPOSITORY,
 } from './interfaces/product-lookup.repository';
 import { FiltersInput } from '../common/query-filters';
+import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 export class ProductLookupService {
@@ -62,7 +63,19 @@ export class ProductLookupService {
     if (dto.sku !== undefined) data.sku = dto.sku;
     data.updatedBy = { id: currentUser.id } as User;
 
-    await this.productLookupRepository.update(data);
+    try {
+      await this.productLookupRepository.update(data);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).driverError?.code === '23505') {
+        const constraint = (err as any).driverError?.constraint;
+        throw new ConflictException(
+          constraint === 'UQ_product_lookup_description_nocode'
+            ? 'Ya existe un producto con esa descripción'
+            : 'Ya existe un producto con ese código',
+        );
+      }
+      throw err;
+    }
     return this.findById(id);
   }
 

@@ -1,4 +1,5 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateProductLookupDto {
   @IsOptional()
@@ -8,6 +9,7 @@ export class CreateProductLookupDto {
   @IsOptional()
   @IsString()
   @MaxLength(1000)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value))
   description?: string;
 
   @IsOptional()

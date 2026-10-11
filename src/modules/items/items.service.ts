@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, QueryFailedError, Repository } from 'typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { ItemFile } from './entities/item-file.entity';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -104,53 +104,73 @@ export class ItemsService {
       }
     }
 
-    const itemId = await this.dataSource.transaction(async (manager) => {
-      if (!existing && !productLookup?.id && dto.productLookup) {
-        productLookup = await manager.save(ProductLookup, {
-          barcode: dto.productLookup?.barcode ?? null,
-          id: randomUUID(),
-          sku: dto.productLookup.sku || null,
-          createdBy: { id: userId } as User,
-          description: dto.productLookup.description || null,
-          needAssembly: dto.productLookup.needAssembly ?? false,
-        });
-      }
+    let itemId: string;
 
-      const item = existing ?? new InventoryItem();
-
-      if (!existing) {
-        if (!productLookup?.id) throw new BadRequestException('El id del producto debe existir');
-        item.productLookupId = productLookup.id;
-      }
-
-      item.id = id;
-      if (dto.name !== undefined) item.name = dto.name;
-      if (dto.qty !== undefined) item.qty = dto.qty;
-      if (dto.location !== undefined) item.location = dto.location;
-      if (dto.categoryId !== undefined) item.categoryId = dto.categoryId;
-      if (dto.latitude !== undefined) item.latitude = dto.latitude;
-      if (dto.longitude !== undefined) item.longitude = dto.longitude;
-      if (dto.notes !== undefined) item.notes = dto.notes;
-      if (!existing) {
-        item.createdBy = { id: userId } as User;
-      }
-
-      await manager.save(InventoryItem, item);
-
-      if (!existing) {
-        await manager.save(ItemStatusHistory, {
-          itemId: item.id,
-          fromStatus: null,
-          toStatus: ItemStatus.RECEIVED,
-          changedBy: { id: userId } as User,
-        });
-        if (productLookup?.needAssembly) {
-          await this.updateStatus(item.id, ItemStatus.PENDING_ASSEMBLY, userId, undefined, manager);
+    try {
+      itemId = await this.dataSource.transaction(async (manager) => {
+        if (!existing && !productLookup?.id && dto.productLookup) {
+          productLookup = await manager.save(ProductLookup, {
+            barcode: dto.productLookup?.barcode ?? null,
+            id: randomUUID(),
+            sku: dto.productLookup.sku || null,
+            createdBy: { id: userId } as User,
+            description: dto.productLookup.description || null,
+            needAssembly: dto.productLookup.needAssembly ?? false,
+          });
         }
-      }
 
-      return item.id;
-    });
+        const item = existing ?? new InventoryItem();
+
+        if (!existing) {
+          if (!productLookup?.id) throw new BadRequestException('El id del producto debe existir');
+          item.productLookupId = productLookup.id;
+        }
+
+        item.id = id;
+        if (dto.name !== undefined) item.name = dto.name;
+        if (dto.qty !== undefined) item.qty = dto.qty;
+        if (dto.location !== undefined) item.location = dto.location;
+        if (dto.categoryId !== undefined) item.categoryId = dto.categoryId;
+        if (dto.latitude !== undefined) item.latitude = dto.latitude;
+        if (dto.longitude !== undefined) item.longitude = dto.longitude;
+        if (dto.notes !== undefined) item.notes = dto.notes;
+        if (!existing) {
+          item.createdBy = { id: userId } as User;
+        }
+
+        await manager.save(InventoryItem, item);
+
+        if (!existing) {
+          await manager.save(ItemStatusHistory, {
+            itemId: item.id,
+            fromStatus: null,
+            toStatus: ItemStatus.RECEIVED,
+            changedBy: { id: userId } as User,
+          });
+          if (productLookup?.needAssembly) {
+            await this.updateStatus(
+              item.id,
+              ItemStatus.PENDING_ASSEMBLY,
+              userId,
+              undefined,
+              manager,
+            );
+          }
+        }
+
+        return item.id;
+      });
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).driverError?.code === '23505') {
+        const constraint = (err as any).driverError?.constraint;
+        throw new ConflictException(
+          constraint === 'UQ_product_lookup_description_nocode'
+            ? 'Ya existe un producto con esa descripción'
+            : 'Ya existe un producto con ese código',
+        );
+      }
+      throw err;
+    }
 
     return this.findById(itemId);
   }
