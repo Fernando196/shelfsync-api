@@ -38,8 +38,15 @@ export class ItemsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
-    return this.itemsRepository.findAll(query, limit, offset);
+  async findAll(
+    query?: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ data: InventoryItem[]; count: number }> {
+    const take = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const skip = Math.max(Number(offset) || 0, 0);
+    const [data, count] = await this.itemsRepository.findAll(query, take, skip);
+    return { data, count };
   }
 
   async findById(id: string): Promise<InventoryItem> {

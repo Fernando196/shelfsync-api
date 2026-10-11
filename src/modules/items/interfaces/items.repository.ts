@@ -3,7 +3,7 @@ import { InventoryItem } from '../entities/inventory-item.entity';
 export const ITEMS_REPOSITORY = 'ITEMS_REPOSITORY';
 
 export interface IItemsRepository {
-  findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]>;
+  findAll(query?: string, limit?: number, offset?: number): Promise<[InventoryItem[], number]>;
   findById(id: string): Promise<InventoryItem | null>;
   save(item: Partial<InventoryItem>): Promise<InventoryItem>;
   softDelete(id: string): Promise<void>;

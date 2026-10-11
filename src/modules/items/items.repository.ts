@@ -9,7 +9,7 @@ import { ItemStatusHistory } from './entities/item-status-history';
 export class ItemsRepository implements IItemsRepository {
   constructor(@InjectRepository(InventoryItem) private readonly repo: Repository<InventoryItem>) {}
 
-  findAll(query?: string, limit?: number, offset?: number): Promise<InventoryItem[]> {
+  findAll(query?: string, limit?: number, offset?: number): Promise<[InventoryItem[], number]> {
     const qb = this.repo
       .createQueryBuilder('item')
       .leftJoinAndMapOne(
@@ -19,7 +19,8 @@ export class ItemsRepository implements IItemsRepository {
         'cover.id = (select f.id from item_files f where f.item_id = item.id order by f.created_at asc, f.id asc limit 1)',
       )
       .leftJoinAndSelect('item.productLookup', 'productLookup')
-      .orderBy('item.createdAt', 'DESC');
+      .orderBy('item.createdAt', 'DESC')
+      .addOrderBy('item.id', 'DESC');
 
     if (query) {
       qb.andWhere(
@@ -32,7 +33,7 @@ export class ItemsRepository implements IItemsRepository {
     if (limit) qb.take(limit);
     if (offset) qb.skip(offset);
 
-    return qb.getMany();
+    return qb.getManyAndCount();
   }
 
   findById(id: string): Promise<InventoryItem | null> {
