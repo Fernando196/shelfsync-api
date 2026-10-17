@@ -11,21 +11,21 @@ async function seed() {
   await AppDataSource.initialize();
   const repo = AppDataSource.getRepository(User);
 
-  const email = process.env.SEED_ADMIN_EMAIL || 'admin@mp210.local';
-  const existing = await repo.findOne({ where: { email } });
+  const userName = process.env.SEED_USER_NAME || 'admin';
+  const existing = await repo.findOne({ where: { userName } });
   if (existing) {
-    console.log(`User ${email} already exists, nothing to do.`);
+    console.log(`User ${userName} already exists, nothing to do.`);
     await AppDataSource.destroy();
     return;
   }
 
   const password = process.env.SEED_ADMIN_PASSWORD || randomPassword();
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = repo.create({ email, passwordHash, fullName: 'Admin' });
+  const user = repo.create({ userName, passwordHash, fullName: 'Admin' });
   await repo.save(user);
 
   console.log('Seed user created:');
-  console.log(`  email:    ${email}`);
+  console.log(`  userName:    ${userName}`);
   console.log(`  password: ${password}`);
 
   await AppDataSource.destroy();
