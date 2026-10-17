@@ -36,8 +36,8 @@ export class ItemsRepository implements IItemsRepository {
     return qb.getManyAndCount();
   }
 
-  findById(id: string): Promise<InventoryItem | null> {
-    return this.repo.findOne({
+  async findById(id: string): Promise<InventoryItem | null> {
+    const item = await this.repo.findOne({
       where: { id },
       select: {
         id: true,
@@ -78,6 +78,15 @@ export class ItemsRepository implements IItemsRepository {
         productLookup: true,
       },
     });
+
+    if (!item) return null;
+
+    const [first] = [...(item.files ?? [])].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id),
+    );
+    item.cover = first ?? null;
+
+    return item;
   }
 
   save(item: Partial<InventoryItem>): Promise<InventoryItem> {
