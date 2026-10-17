@@ -22,6 +22,11 @@ export class UsersService {
     return user;
   }
 
+  async findByUserNameAuth(userName: string): Promise<User | null> {
+    const user = await this.usersRepository.findByUserNameAuth(userName);
+    return user;
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.usersRepository.findByEmail(email);
     return user;
@@ -50,11 +55,21 @@ export class UsersService {
 
     if (userDto?.email) {
       const existEmail = await this.findByEmail(userDto.email);
-      if (existEmail) {
+      if (existEmail && existEmail.id !== id) {
         throw new ConflictException('The email is already in use');
       }
       user.email = userDto.email;
     }
+    if (userDto?.userName) {
+      const existUserName = await this.usersRepository.findByUserName(
+        userDto.userName.trim().toLowerCase(),
+      );
+      if (existUserName && existUserName.id !== id) {
+        throw new ConflictException('The user name is already in use');
+      }
+      user.userName = userDto.userName.trim().toLowerCase();
+    }
+
     if (userDto?.fullName) user.fullName = userDto.fullName;
     if (userDto?.password) {
       const newPasswordHash = bcrypt.hashSync(userDto.password, 10);
@@ -67,19 +82,30 @@ export class UsersService {
   }
 
   async create(data: CreateUserDto, currentUser: User): Promise<User> {
-    const existing = await this.findByEmail(data.email);
+    const existingUserName = await this.usersRepository.findByUserName(
+      data.userName.trim().toLowerCase(),
+    );
 
-    if (existing) {
-      throw new ConflictException('The email is already in use.');
+    if (existingUserName) {
+      throw new ConflictException('The user name is already in use.');
+    }
+
+    if (data?.email) {
+      const existingEmail = await this.usersRepository.findByEmail(data.email);
+      if (existingEmail) {
+        throw new ConflictException('The email is already in use.');
+      }
     }
 
     const passwordHash = bcrypt.hashSync(data.password, 10);
 
     const user: Partial<User> = {
       id: data?.id ? data.id : randomUUID(),
-      email: data.email,
+      email: data.email ?? null,
       passwordHash,
+      userName: data.userName.trim().toLowerCase(),
       createdBy: { id: currentUser.id } as User,
+      fullName: data.fullName,
     };
     return await this.usersRepository.create(user);
   }
