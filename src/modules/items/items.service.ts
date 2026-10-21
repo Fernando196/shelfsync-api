@@ -174,6 +174,8 @@ export class ItemsService {
         if (dto.latitude !== undefined) item.latitude = dto.latitude;
         if (dto.longitude !== undefined) item.longitude = dto.longitude;
         if (dto.notes !== undefined) item.notes = dto.notes;
+        if (dto.price !== undefined) item.price = dto.price;
+        if (dto.condition !== undefined) item.condition = dto.condition;
         if (!existing) {
           item.createdBy = { id: userId } as User;
         }

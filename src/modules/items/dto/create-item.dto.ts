@@ -1,16 +1,20 @@
 import {
+  IsEnum,
   IsInt,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { ItemStatus } from '../interfaces/ItemStatus.enum';
+import { ItemCondition } from '../interfaces/ItemCondition.enum';
 import { CreateProductLookupDto } from '../../product-lookup/dto/create-product-lookup.dto';
 import { Type } from 'class-transformer';
 
@@ -59,4 +63,15 @@ export class CreateItemDto {
   @IsString()
   @MaxLength(1500)
   notes?: string;
+
+  // null borra el precio
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2, allowNaN: false, allowInfinity: false })
+  @Min(0)
+  @Max(99999999.99)
+  price?: number | null;
+
+  @IsOptional()
+  @IsEnum(ItemCondition)
+  condition?: ItemCondition;
 }

@@ -15,6 +15,7 @@ import { ItemFile } from './item-file.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { ProductLookup } from '../../product-lookup/entities/product-lookup.entity';
 import { ItemStatus } from '../interfaces/ItemStatus.enum';
+import { ItemCondition } from '../interfaces/ItemCondition.enum';
 import { ItemStatusHistory } from './item-status-history';
 
 @Entity('inventory_items')
@@ -82,6 +83,22 @@ export class InventoryItem {
 
   @Column({ nullable: true, length: 1500 })
   notes: string;
+
+  // numeric llega como string desde pg; se convierte a number
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: number | null) => value,
+      from: (value: string | null) => (value === null ? null : Number(value)),
+    },
+  })
+  price: number | null;
+
+  @Column({ type: 'enum', enum: ItemCondition, default: ItemCondition.NEW })
+  condition: ItemCondition;
 
   @Column({ name: 'cover_photo_id', type: 'uuid', nullable: true })
   coverPhotoId: string | null;

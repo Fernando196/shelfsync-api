@@ -79,6 +79,8 @@ export class ItemsRepository implements IItemsRepository {
         files: true,
         coverPhotoId: true,
         status: true,
+        price: true,
+        condition: true,
         createdBy: {
           fullName: true,
         },
