@@ -71,6 +71,13 @@ export class CreateItemDto {
   @Max(99999999.99)
   price?: number | null;
 
+  // costo de compra; null lo borra
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2, allowNaN: false, allowInfinity: false })
+  @Min(0)
+  @Max(99999999.99)
+  cost?: number | null;
+
   @IsOptional()
   @IsEnum(ItemCondition)
   condition?: ItemCondition;

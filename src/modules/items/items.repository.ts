@@ -80,6 +80,7 @@ export class ItemsRepository implements IItemsRepository {
         coverPhotoId: true,
         status: true,
         price: true,
+        cost: true,
         condition: true,
         createdBy: {
           fullName: true,

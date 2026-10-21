@@ -18,6 +18,12 @@ import { ItemStatus } from '../interfaces/ItemStatus.enum';
 import { ItemCondition } from '../interfaces/ItemCondition.enum';
 import { ItemStatusHistory } from './item-status-history';
 
+// numeric llega como string desde pg; se convierte a number
+const numericTransformer = {
+  to: (value: number | null) => value,
+  from: (value: string | null) => (value === null ? null : Number(value)),
+};
+
 @Entity('inventory_items')
 export class InventoryItem {
   @PrimaryColumn('uuid')
@@ -84,18 +90,24 @@ export class InventoryItem {
   @Column({ nullable: true, length: 1500 })
   notes: string;
 
-  // numeric llega como string desde pg; se convierte a number
   @Column({
     type: 'numeric',
     precision: 10,
     scale: 2,
     nullable: true,
-    transformer: {
-      to: (value: number | null) => value,
-      from: (value: string | null) => (value === null ? null : Number(value)),
-    },
+    transformer: numericTransformer,
   })
   price: number | null;
+
+  // costo de compra (manifiesto/almacén), por item
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: numericTransformer,
+  })
+  cost: number | null;
 
   @Column({ type: 'enum', enum: ItemCondition, default: ItemCondition.NEW })
   condition: ItemCondition;
