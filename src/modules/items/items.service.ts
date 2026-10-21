@@ -24,10 +24,8 @@ import {
 import { DataSource } from 'typeorm';
 import { ProductLookup } from '../product-lookup/entities/product-lookup.entity';
 import { ALLOWED_FROM } from './const/allowed_from.const';
-import { mkdir, unlink } from 'fs/promises';
-import { basename } from 'path';
 import { isUUID } from 'class-validator';
-import sharp from 'sharp';
+import { deleteFileAndVariants, generateVariant } from './image-variants';
 
 @Injectable()
 export class ItemsService {
@@ -236,22 +234,12 @@ export class ItemsService {
 
   async addPhotos(id: string, files: Express.Multer.File[]) {
     const item = await this.findById(id);
-    await mkdir('./uploads/thumbs', {
-      recursive: true,
-    });
     const photos = await Promise.all(
       files.map(async (file) => {
-        let thumbnailUrl: string | null = null;
-        try {
-          await sharp(file.path)
-            .rotate()
-            .resize(240)
-            .jpeg({ quality: 70 })
-            .toFile(`./uploads/thumbs/${file.filename}`);
-          thumbnailUrl = `/uploads/thumbs/${file.filename}`;
-        } catch (err) {
-          console.log('Error al generar el thumnail para el archvo: ', file.filename, err);
-        }
+        const [thumbnailUrl, mediumUrl] = await Promise.all([
+          generateVariant(file.filename, 'thumbs'),
+          generateVariant(file.filename, 'medium'),
+        ]);
         return this.photosRepo.create({
           itemId: item.id,
           filename: file.filename,
@@ -260,6 +248,7 @@ export class ItemsService {
           kind: 'photo',
           mimeType: file.mimetype,
           thumbnailUrl,
+          mediumUrl,
         });
       }),
     );
@@ -274,17 +263,7 @@ export class ItemsService {
       : null;
     if (!photo) throw new NotFoundException('Photo not found');
     await this.photosRepo.remove(photo);
-
-    const filename = basename(photo.filename);
-    await Promise.all(
-      [`./uploads/${filename}`, `./uploads/thumbs/${filename}`].map((path) =>
-        unlink(path).catch((err) => {
-          if (err?.code !== 'ENOENT') {
-            console.log('Error al borrar el archivo: ', path, err);
-          }
-        }),
-      ),
-    );
+    await deleteFileAndVariants(photo.filename);
     return this.findById(id);
   }
 

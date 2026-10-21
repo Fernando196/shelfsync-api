@@ -40,4 +40,7 @@ export class ItemFile {
 
   @Column({ name: 'thumbnail_url', type: 'varchar', nullable: true })
   thumbnailUrl: string | null;
+
+  @Column({ name: 'medium_url', type: 'varchar', nullable: true })
+  mediumUrl: string | null;
 }
