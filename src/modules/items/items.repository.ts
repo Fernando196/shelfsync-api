@@ -81,6 +81,7 @@ export class ItemsRepository implements IItemsRepository {
         status: true,
         price: true,
         cost: true,
+        notes: true,
         condition: true,
         createdBy: {
           fullName: true,

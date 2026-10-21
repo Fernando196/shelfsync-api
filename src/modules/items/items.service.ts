@@ -308,6 +308,9 @@ export class ItemsService {
     await em.save(ItemStatusHistory, history);
     item.status = newStatus;
     await em.save(InventoryItem, item);
-    return em.findOne(InventoryItem, { where: { id: item.id } });
+    // Dentro de una transacción el repositorio aún no ve los cambios; fuera de ella
+    // se regresa el item completo (files, cover, productLookup...) como en los demás endpoints.
+    if (manager) return em.findOne(InventoryItem, { where: { id: item.id } });
+    return this.findById(item.id);
   }
 }
