@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { JwtAuthGuard } from './modules/common/guards/jwt-auth.guard';
 import { CategoryModule } from './modules/categories/categories.module';
 import { ProductLookupModule } from './modules/product-lookup/product-lookup.module';
+import { MenuModule } from './modules/menu/menu.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ProductLookupModule } from './modules/product-lookup/product-lookup.mod
     ItemsModule,
     CategoryModule,
     ProductLookupModule,
+    MenuModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
 })

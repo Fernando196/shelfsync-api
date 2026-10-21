@@ -7,10 +7,14 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'node:crypto';
 import { NOTFOUND } from 'node:dns';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { MenuService } from '../menu/menu.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject(USERS_REPOSITORY) private readonly usersRepository: IUsersRepository) {}
+  constructor(
+    @Inject(USERS_REPOSITORY) private readonly usersRepository: IUsersRepository,
+    private readonly menuService: MenuService,
+  ) {}
 
   findAll(query?: FiltersInput, page?: number, limit?: number) {
     return this.usersRepository.findAll(query, page, limit);
@@ -107,6 +111,8 @@ export class UsersService {
       createdBy: { id: currentUser.id } as User,
       fullName: data.fullName,
     };
-    return await this.usersRepository.create(user);
+    const created = await this.usersRepository.create(user);
+    await this.menuService.grantDefaults(created.id);
+    return created;
   }
 }

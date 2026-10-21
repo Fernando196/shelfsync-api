@@ -7,6 +7,8 @@ import { User } from '../modules/users/entities/user.entity';
 import { Category } from '../modules/categories/entities/category.entity';
 import { ProductLookup } from '../modules/product-lookup/entities/product-lookup.entity';
 import { ItemStatusHistory } from '../modules/items/entities/item-status-history';
+import { Menu } from '../modules/menu/entities/menu.entity';
+import { MenuUser } from '../modules/menu/entities/menu-user.entity';
 import { ItemStatus } from '../modules/items/interfaces/ItemStatus.enum';
 
 dotenv.config();
@@ -18,7 +20,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, InventoryItem, ItemFile, Category, ProductLookup, ItemStatusHistory],
+  entities: [User, InventoryItem, ItemFile, Category, ProductLookup, ItemStatusHistory, Menu, MenuUser],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,
 });

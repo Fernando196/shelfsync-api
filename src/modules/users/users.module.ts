@@ -5,9 +5,10 @@ import { USERS_REPOSITORY } from './interfaces/users.repository';
 import { UsersRepository } from './users.repository';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
+import { MenuModule } from '../menu/menu.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User]), MenuModule],
   providers: [UsersService, { provide: USERS_REPOSITORY, useClass: UsersRepository }],
   controllers: [UsersController],
   exports: [UsersService],
