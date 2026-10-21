@@ -95,4 +95,9 @@ export class ItemsController {
   addPhotos(@Param('id') id: string, @UploadedFiles() files: Express.Multer.File[]) {
     return this.itemsService.addPhotos(id, files);
   }
+
+  @Delete(':id/photos/:photoId')
+  removePhoto(@Param('id') id: string, @Param('photoId') photoId: string) {
+    return this.itemsService.removePhoto(id, photoId);
+  }
 }

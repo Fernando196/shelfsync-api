@@ -24,7 +24,9 @@ import {
 import { DataSource } from 'typeorm';
 import { ProductLookup } from '../product-lookup/entities/product-lookup.entity';
 import { ALLOWED_FROM } from './const/allowed_from.const';
-import { mkdir } from 'fs/promises';
+import { mkdir, unlink } from 'fs/promises';
+import { basename } from 'path';
+import { isUUID } from 'class-validator';
 import sharp from 'sharp';
 
 @Injectable()
@@ -229,6 +231,27 @@ export class ItemsService {
       }),
     );
     await this.photosRepo.save(photos);
+    return this.findById(id);
+  }
+
+  async removePhoto(id: string, photoId: string) {
+    await this.findById(id);
+    const photo = isUUID(photoId)
+      ? await this.photosRepo.findOne({ where: { id: photoId, itemId: id } })
+      : null;
+    if (!photo) throw new NotFoundException('Photo not found');
+    await this.photosRepo.remove(photo);
+
+    const filename = basename(photo.filename);
+    await Promise.all(
+      [`./uploads/${filename}`, `./uploads/thumbs/${filename}`].map((path) =>
+        unlink(path).catch((err) => {
+          if (err?.code !== 'ENOENT') {
+            console.log('Error al borrar el archivo: ', path, err);
+          }
+        }),
+      ),
+    );
     return this.findById(id);
   }
 
