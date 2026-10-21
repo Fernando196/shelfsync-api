@@ -39,12 +39,19 @@ export class ItemsController {
     @Query('q') q?: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @Query('status') status?: string | string[],
   ) {
     return this.itemsService.findAll(
       q,
       limit ? Number(limit) : undefined,
       offset ? Number(offset) : undefined,
+      status,
     );
+  }
+
+  @Get('status-counts')
+  statusCounts(@Query('q') q?: string) {
+    return this.itemsService.getStatusCounts(q);
   }
 
   @Get(':id')

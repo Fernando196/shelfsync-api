@@ -44,11 +44,44 @@ export class ItemsService {
     query?: string,
     limit?: number,
     offset?: number,
+    status?: string | string[],
   ): Promise<{ data: InventoryItem[]; count: number }> {
     const take = Math.min(Math.max(Number(limit) || 20, 1), 100);
     const skip = Math.max(Number(offset) || 0, 0);
-    const [data, count] = await this.itemsRepository.findAll(query, take, skip);
+    const statuses = this.parseStatuses(status);
+    const [data, count] = await this.itemsRepository.findAll(query, take, skip, statuses);
     return { data, count };
+  }
+
+  async getStatusCounts(
+    query?: string,
+  ): Promise<{ total: number; counts: Record<ItemStatus, number> }> {
+    const counts = Object.fromEntries(Object.values(ItemStatus).map((s) => [s, 0])) as Record<
+      ItemStatus,
+      number
+    >;
+    let total = 0;
+    for (const row of await this.itemsRepository.countByStatus(query)) {
+      counts[row.status] = row.count;
+      total += row.count;
+    }
+    return { total, counts };
+  }
+
+  private parseStatuses(status?: string | string[]): ItemStatus[] | undefined {
+    const values = [status ?? []]
+      .flat()
+      .join(',')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!values.length) return undefined;
+    const allowed = Object.values(ItemStatus) as string[];
+    const invalid = values.filter((v) => !allowed.includes(v));
+    if (invalid.length) {
+      throw new BadRequestException(`Estatus inválido: ${invalid.join(', ')}`);
+    }
+    return values as ItemStatus[];
   }
 
   async findById(id: string): Promise<InventoryItem> {

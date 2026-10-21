@@ -1,15 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { IItemsRepository } from './interfaces/items.repository';
 import { ItemStatusHistory } from './entities/item-status-history';
+import { ItemStatus } from './interfaces/ItemStatus.enum';
 
 @Injectable()
 export class ItemsRepository implements IItemsRepository {
   constructor(@InjectRepository(InventoryItem) private readonly repo: Repository<InventoryItem>) {}
 
-  findAll(query?: string, limit?: number, offset?: number): Promise<[InventoryItem[], number]> {
+  findAll(
+    query?: string,
+    limit?: number,
+    offset?: number,
+    statuses?: ItemStatus[],
+  ): Promise<[InventoryItem[], number]> {
     const qb = this.repo
       .createQueryBuilder('item')
       .leftJoinAndMapOne(
@@ -25,6 +31,26 @@ export class ItemsRepository implements IItemsRepository {
       .orderBy('item.createdAt', 'DESC')
       .addOrderBy('item.id', 'DESC');
 
+    this.applySearch(qb, query);
+    if (statuses?.length) qb.andWhere('item.status IN (:...statuses)', { statuses });
+    if (limit) qb.take(limit);
+    if (offset) qb.skip(offset);
+
+    return qb.getManyAndCount();
+  }
+
+  async countByStatus(query?: string): Promise<{ status: ItemStatus; count: number }[]> {
+    const qb = this.repo
+      .createQueryBuilder('item')
+      .leftJoin('item.productLookup', 'productLookup')
+      .select('item.status', 'status')
+      .addSelect('COUNT(*)::int', 'count')
+      .groupBy('item.status');
+    this.applySearch(qb, query);
+    return qb.getRawMany();
+  }
+
+  private applySearch(qb: SelectQueryBuilder<InventoryItem>, query?: string) {
     if (query) {
       qb.andWhere(
         '(item.name ILIKE :q OR item.location ILIKE :q OR productLookup.sku ILIKE :q OR productLookup.barcode ILIKE :q OR CAST(item.code AS TEXT) ILIKE :q)',
@@ -33,10 +59,6 @@ export class ItemsRepository implements IItemsRepository {
         },
       );
     }
-    if (limit) qb.take(limit);
-    if (offset) qb.skip(offset);
-
-    return qb.getManyAndCount();
   }
 
   async findById(id: string): Promise<InventoryItem | null> {
