@@ -23,7 +23,14 @@ export function applyFilters<T extends object>(
         qb.andWhere(`${alias}.${field} ILIKE :${param}`, { [param]: `%${value}%` });
       if (operator === 'gte') qb.andWhere(`${alias}.${field} >= :${param}`, { [param]: value });
       if (operator === 'lte') qb.andWhere(`${alias}.${field} <= :${param}`, { [param]: value });
-      if (operator === 'in') qb.andWhere(`${alias}.${field} in :${param}`, { [param]: value });
+      if (operator === 'in') {
+        // valor separado por comas: filters[campo][in]=a,b,c
+        const values = String(value)
+          .split(',')
+          .map((v) => v.trim())
+          .filter(Boolean);
+        if (values.length) qb.andWhere(`${alias}.${field} IN (:...${param})`, { [param]: values });
+      }
     }
   }
 }
