@@ -83,5 +83,12 @@ export class InventoryItem {
   @Column({ nullable: true, length: 1500 })
   notes: string;
 
+  @Column({ name: 'cover_photo_id', type: 'uuid', nullable: true })
+  coverPhotoId: string | null;
+
+  @ManyToOne(() => ItemFile, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'cover_photo_id' })
+  coverPhoto?: ItemFile | null;
+
   cover?: ItemFile | null;
 }

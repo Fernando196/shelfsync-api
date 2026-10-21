@@ -16,7 +16,10 @@ export class ItemsRepository implements IItemsRepository {
         'item.cover',
         'item.files',
         'cover',
-        'cover.id = (select f.id from item_files f where f.item_id = item.id order by f.created_at asc, f.id asc limit 1)',
+        `cover.id = coalesce(
+          (select f.id from item_files f where f.id = item.cover_photo_id and f.item_id = item.id),
+          (select f.id from item_files f where f.item_id = item.id order by f.created_at desc, f.id desc limit 1)
+        )`,
       )
       .leftJoinAndSelect('item.productLookup', 'productLookup')
       .orderBy('item.createdAt', 'DESC')
@@ -52,6 +55,7 @@ export class ItemsRepository implements IItemsRepository {
         updatedAt: true,
         deletedAt: true,
         files: true,
+        coverPhotoId: true,
         status: true,
         createdBy: {
           fullName: true,
@@ -81,10 +85,11 @@ export class ItemsRepository implements IItemsRepository {
 
     if (!item) return null;
 
-    const [first] = [...(item.files ?? [])].sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id),
+    const files = item.files ?? [];
+    const [newest] = [...files].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id),
     );
-    item.cover = first ?? null;
+    item.cover = files.find((f) => f.id === item.coverPhotoId) ?? newest ?? null;
 
     return item;
   }

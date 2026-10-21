@@ -23,6 +23,7 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ItemStatus } from './interfaces/ItemStatus.enum';
 import { UpdateItemStatusDto } from './dto/update-item-status.dto';
+import { UpdateItemCoverDto } from './dto/update-item-cover.dto';
 
 @Controller('items')
 export class ItemsController {
@@ -94,6 +95,11 @@ export class ItemsController {
   )
   addPhotos(@Param('id') id: string, @UploadedFiles() files: Express.Multer.File[]) {
     return this.itemsService.addPhotos(id, files);
+  }
+
+  @Patch(':id/cover')
+  setCover(@Param('id') id: string, @Body() dto: UpdateItemCoverDto) {
+    return this.itemsService.setCover(id, dto.photoId);
   }
 
   @Delete(':id/photos/:photoId')

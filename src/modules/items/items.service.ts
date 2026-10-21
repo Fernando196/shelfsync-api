@@ -255,6 +255,15 @@ export class ItemsService {
     return this.findById(id);
   }
 
+  async setCover(id: string, photoId: string | null) {
+    const item = await this.findById(id);
+    if (photoId !== null && !item.files.some((f) => f.id === photoId)) {
+      throw new NotFoundException('Photo not found');
+    }
+    await this.itemsRepository.save({ id, coverPhotoId: photoId });
+    return this.findById(id);
+  }
+
   async updateStatus(
     id: string,
     newStatus: ItemStatus,
